@@ -92,7 +92,7 @@ html: function(isEvent, data) {
 <div>
 	<div>
 		<p>
-			Made by ZockerNico.
+			Made by ZockerNico.<br>Fixed By Armağan#2448.
 		</p>
 	</div>
 	<div style="float: left; width: 105%;">
@@ -263,14 +263,18 @@ action: function(cache) {
 				break;
 		};
 		//Store list
-		console.log(urlList);
+		// Debug Disabled.
+		// console.log(urlList);
 		const varName = _this.evalMessage(data.varName, cache);
 		const storage = parseInt(data.storage);
 		_this.storeValue(urlList, storage, varName, cache);
 
+		//OOF
+		_this.callNextAction(cache);
+
 	}).catch(console.error);
 
-	setTimeout(function(){ _this.callNextAction(cache); }, 500);
+
 },
 
 //---------------------------------------------------------------------

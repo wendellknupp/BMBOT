@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Create Animated Emoji",
+name: "Get Dominant Color",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Create Animated Emoji",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Emoji Control",
+section: "Image Editing",
 
 //---------------------------------------------------------------------
 // Action Subtitle
@@ -23,29 +23,9 @@ section: "Emoji Control",
 //---------------------------------------------------------------------
 
 subtitle: function(data) {
-	return `${data.emojiName}`;
+	const info = ['Image URL'];
+	return `Get dominant color from URL`;
 },
-
-//---------------------------------------------------------------------
-	 // DBM Mods Manager Variables (Optional but nice to have!)
-	 //
-	 // These are variables that DBM Mods Manager uses to show information
-	 // about the mods for people to see in the list.
-	 //---------------------------------------------------------------------
-
-	 // Who made the mod (If not set, defaults to "DBM Mods")
-	 author: "MrGold",
-
-	 // The version of the mod (Defaults to 1.0.0)
-	 version: "1.9.4", //Added in 1.9.4
-
-	 // A short description to show on the mod line for this mod (Must be on a single line)
-	 short_description: "Creates an Animated Emoji",
-
-	 // If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
-     
-
-	 //---------------------------------------------------------------------
 
 //---------------------------------------------------------------------
 // Action Storage Function
@@ -54,9 +34,9 @@ subtitle: function(data) {
 //---------------------------------------------------------------------
 
 variableStorage: function(data, varType) {
-	const type = parseInt(data.storage2);
+	const type = parseInt(data.storage);
 	if(type !== varType) return;
-	return ([data.varName2, 'Animated Emoji']);
+	return ([data.varName, 'String']);
 },
 
 //---------------------------------------------------------------------
@@ -67,7 +47,7 @@ variableStorage: function(data, varType) {
 // are also the names of the fields stored in the action's JSON data.
 //---------------------------------------------------------------------
 
-fields: ["emojiName", "storage", "varName", "storage2", "varName2"],
+fields: ["info", "find", "storage", "varName"],
 
 //---------------------------------------------------------------------
 // Command HTML
@@ -88,37 +68,27 @@ fields: ["emojiName", "storage", "varName", "storage2", "varName2"],
 html: function(isEvent, data) {
 	return `
 <div>
-    <p>
-        <u>Mod Info:</u><br>
-	    Created by MrGold
-    </p>
-</div><br>
-<div style="width: 90%;">
-	Animated Emoji Name:<br>
-	<input id="emojiName" class="round" type="text">
-</div><br>
-<div>
-	<div style="float: left; width: 35%;">
-		Source GIF:<br>
-		<select id="storage" class="round" onchange="glob.refreshVariableList(this)">
-			${data.variables[1]}
+	<div style="float: left; width: 40%;">
+		Source Field:<br>
+		<select id="info" class="round">
+			<option value="0" selected>Image URL</option>
 		</select>
 	</div>
-	<div id="varNameContainer" style="float: right; width: 60%;">
-		Variable Name:<br>
-		<input id="varName" class="round" type="text" list="variableList">
+	<div style="float: right; width: 55%;">
+		Search Value:<br>
+		<input id="find" class="round" type="text">
 	</div>
 </div><br><br><br>
 <div style="padding-top: 8px;">
 	<div style="float: left; width: 35%;">
 		Store In:<br>
-		<select id="storage2" class="round" onchange="glob.onChange1(this)">
-			${data.variables[0]}
+		<select id="storage" class="round">
+			${data.variables[1]}
 		</select>
 	</div>
-	<div id="varNameContainer2" style="display: none; float: right; width: 60%;">
+	<div id="varNameContainer" style="float: right; width: 60%;">
 		Variable Name:<br>
-		<input id="varName2" class="round" type="text">
+		<input id="varName" class="round" type="text">
 	</div>
 </div>`
 },
@@ -132,20 +102,6 @@ html: function(isEvent, data) {
 //---------------------------------------------------------------------
 
 init: function() {
-	const {glob, document} = this;
-
-	glob.onChange1 = function(event) {
-		const value = parseInt(event.value);
-		const varNameInput = document.getElementById("varNameContainer2");
-		if(value === 0) {
-			varNameInput.style.display = "none";
-		} else {
-			varNameInput.style.display = null;
-		}
-	};
-
-	glob.refreshVariableList(document.getElementById('storage'));
-	glob.onChange1(document.getElementById('storage2'));
 },
 
 //---------------------------------------------------------------------
@@ -156,23 +112,31 @@ init: function() {
 // so be sure to provide checks for variable existance.
 //---------------------------------------------------------------------
 
-action: function(cache) {
+action: async function(cache) {
+	const { getColorFromURL } = require('color-thief-node'), rgbToHex = require("rgb-hex");
 	const data = cache.actions[cache.index];
-	const server = cache.server;
-	if(server && server.createEmoji) {
-		const type = parseInt(data.storage);
-		const varName = this.evalMessage(data.varName, cache);
-		const gif = this.getVariable(type, varName, cache);
-		const name = this.evalMessage(data.emojiName, cache);
-		server.createEmoji(gif, name).then(function(emoji) {
-			const varName2 = this.evalMessage(data.varName2, cache);
-			const storage = parseInt(data.storage2);
-			this.storeValue(emoji, storage, varName2, cache);
-			this.callNextAction(cache);
-		}.bind(this)).catch(this.displayError.bind(this, data, cache));
-	} else {
-		this.callNextAction(cache);
+	const bot = this.getDBM().Bot.bot;
+	const info = parseInt(data.info);
+	const url = this.evalMessage(data.find, cache);
+	let result;
+	switch(info) {
+		case 0:
+			try {
+				let RGB = await getColorFromURL(url);
+				result = `#${rgbToHex(RGB.join(", "))}`;
+			} catch (error) {
+				result = undefined;
+			}
+			break;
+		default:
+			break;
 	}
+	if (result !== undefined) {
+		const storage = parseInt(data.storage);
+		const varName = this.evalMessage(data.varName, cache);
+		this.storeValue(result, storage, varName, cache);
+	}
+	this.callNextAction(cache);
 },
 
 //---------------------------------------------------------------------

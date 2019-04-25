@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Create Animated Emoji",
+name: "Store Global Data",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Create Animated Emoji",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Emoji Control",
+section: "Deprecated",
 
 //---------------------------------------------------------------------
 // Action Subtitle
@@ -23,29 +23,29 @@ section: "Emoji Control",
 //---------------------------------------------------------------------
 
 subtitle: function(data) {
-	return `${data.emojiName}`;
+	const storage = ['', 'Temp Variable', 'Server Variable', 'Global Variable'];
+	return `${storage[parseInt(data.storage)]} (${data.varName})`;
 },
 
 //---------------------------------------------------------------------
-	 // DBM Mods Manager Variables (Optional but nice to have!)
-	 //
-	 // These are variables that DBM Mods Manager uses to show information
-	 // about the mods for people to see in the list.
-	 //---------------------------------------------------------------------
+// DBM Mods Manager Variables (Optional but nice to have!)
+//
+// These are variables that DBM Mods Manager uses to show information
+// about the mods for people to see in the list.
+//---------------------------------------------------------------------
 
-	 // Who made the mod (If not set, defaults to "DBM Mods")
-	 author: "MrGold",
+// Who made the mod (If not set, defaults to "DBM Mods")
+author: "MrGold",
 
-	 // The version of the mod (Defaults to 1.0.0)
-	 version: "1.9.4", //Added in 1.9.4
+// The version of the mod (Defaults to 1.0.0)
+version: "1.9.5", //Added in 1.9.5
 
-	 // A short description to show on the mod line for this mod (Must be on a single line)
-	 short_description: "Creates an Animated Emoji",
+// A short description to show on the mod line for this mod (Must be on a single line)
+short_description: "Stores a Global Data Value",
 
-	 // If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
-     
+// If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
 
-	 //---------------------------------------------------------------------
+//---------------------------------------------------------------------
 
 //---------------------------------------------------------------------
 // Action Storage Function
@@ -54,9 +54,9 @@ subtitle: function(data) {
 //---------------------------------------------------------------------
 
 variableStorage: function(data, varType) {
-	const type = parseInt(data.storage2);
+	const type = parseInt(data.storage);
 	if(type !== varType) return;
-	return ([data.varName2, 'Animated Emoji']);
+	return ([data.varName, 'Unknown Type']);
 },
 
 //---------------------------------------------------------------------
@@ -67,7 +67,7 @@ variableStorage: function(data, varType) {
 // are also the names of the fields stored in the action's JSON data.
 //---------------------------------------------------------------------
 
-fields: ["emojiName", "storage", "varName", "storage2", "varName2"],
+fields: ["dataName", "defaultVal", "storage", "varName"],
 
 //---------------------------------------------------------------------
 // Command HTML
@@ -87,38 +87,26 @@ fields: ["emojiName", "storage", "varName", "storage2", "varName2"],
 
 html: function(isEvent, data) {
 	return `
-<div>
-    <p>
-        <u>Mod Info:</u><br>
-	    Created by MrGold
-    </p>
-</div><br>
-<div style="width: 90%;">
-	Animated Emoji Name:<br>
-	<input id="emojiName" class="round" type="text">
-</div><br>
-<div>
-	<div style="float: left; width: 35%;">
-		Source GIF:<br>
-		<select id="storage" class="round" onchange="glob.refreshVariableList(this)">
-			${data.variables[1]}
-		</select>
+<div style="padding-top: 8px;">
+	<div style="float: left; width: 40%;">
+		Data Name:<br>
+		<input id="dataName" class="round" type="text">
 	</div>
-	<div id="varNameContainer" style="float: right; width: 60%;">
-		Variable Name:<br>
-		<input id="varName" class="round" type="text" list="variableList">
+	<div style="float: left; width: 60%;">
+		Default Value (if data doesn't exist):<br>
+		<input id="defaultVal" class="round" type="text" value="0">
 	</div>
 </div><br><br><br>
 <div style="padding-top: 8px;">
 	<div style="float: left; width: 35%;">
 		Store In:<br>
-		<select id="storage2" class="round" onchange="glob.onChange1(this)">
-			${data.variables[0]}
+		<select id="storage" class="round">
+			${data.variables[1]}
 		</select>
 	</div>
-	<div id="varNameContainer2" style="display: none; float: right; width: 60%;">
+	<div id="varNameContainer" style="float: right; width: 60%;">
 		Variable Name:<br>
-		<input id="varName2" class="round" type="text">
+		<input id="varName" class="round" type="text"><br>
 	</div>
 </div>`
 },
@@ -131,22 +119,7 @@ html: function(isEvent, data) {
 // functions for the DOM elements.
 //---------------------------------------------------------------------
 
-init: function() {
-	const {glob, document} = this;
-
-	glob.onChange1 = function(event) {
-		const value = parseInt(event.value);
-		const varNameInput = document.getElementById("varNameContainer2");
-		if(value === 0) {
-			varNameInput.style.display = "none";
-		} else {
-			varNameInput.style.display = null;
-		}
-	};
-
-	glob.refreshVariableList(document.getElementById('storage'));
-	glob.onChange1(document.getElementById('storage2'));
-},
+init: function() {},
 
 //---------------------------------------------------------------------
 // Action Bot Function
@@ -158,21 +131,38 @@ init: function() {
 
 action: function(cache) {
 	const data = cache.actions[cache.index];
-	const server = cache.server;
-	if(server && server.createEmoji) {
-		const type = parseInt(data.storage);
-		const varName = this.evalMessage(data.varName, cache);
-		const gif = this.getVariable(type, varName, cache);
-		const name = this.evalMessage(data.emojiName, cache);
-		server.createEmoji(gif, name).then(function(emoji) {
-			const varName2 = this.evalMessage(data.varName2, cache);
-			const storage = parseInt(data.storage2);
-			this.storeValue(emoji, storage, varName2, cache);
-			this.callNextAction(cache);
-		}.bind(this)).catch(this.displayError.bind(this, data, cache));
-	} else {
+
+	const dataName = this.evalMessage(data.dataName, cache);
+	const defVal = this.eval(this.evalMessage(data.defaultVal, cache), cache);
+
+	const fs = require("fs");
+	const path = require("path");
+
+	const filePath = path.join(process.cwd(), "data", "globals.json");
+
+	if(!fs.existsSync(filePath)) {
+		console.log("ERROR: Globals JSON file does not exist!");
 		this.callNextAction(cache);
+		return;
 	}
+
+	const obj = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+	
+	let result;
+	if(defVal) {
+		if(obj[dataName]) {
+			result = obj[dataName];
+	    } else {
+			result = defVal;
+		}
+	} else {
+		result = obj[dataName];
+	}
+	
+	const storage = parseInt(data.storage);
+	const varName = this.evalMessage(data.varName, cache);
+	this.storeValue(result, storage, varName, cache);
+	this.callNextAction(cache);
 },
 
 //---------------------------------------------------------------------

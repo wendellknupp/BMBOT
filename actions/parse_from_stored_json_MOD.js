@@ -101,65 +101,72 @@ module.exports = {
 
   html: function(isEvent, data) {
     return `
+	<div id="mod-container">
+	<div id="main-body">
 
-	 <div>
-
-		<div style="width: 550px; height: 350px; overflow-y: scroll;">
+		<div id="wrexdiv" style="width: 550px; height: 350px; overflow-y: scroll;">
 			<div>
 				<p>
 					<u>Mod Info:</u><br>
-					Created by General Wrex! Edited and fixed by SeikiMatt!<br>
-          Added Debug Mode By Armağan#2448!
+					Created by General Wrex! Edited and fixed by SeikiMatt!
 				</p>
 			</div>
 			<div>
 				<div><br>
 					Stored JSON Variable Name: <br>
-					<input id="jsonObjectVarName" class="round" style="width: 400px" type="text"><br>
+					<input id="jsonObjectVarName" class="round" style="width: 100%;" type="text"><br>
 				</div><br>
 				JSON Path: (supports the usage of <a href="http://goessner.net/articles/JsonPath/index.html#e2" target="_blank">JSON
-					Path (Regex)</a>)<br>
-				<input id="path" class="round" ; style="width: 400px" type="text"><br>
+					Path (Regex)</a>))<br>
+				<input id="path" class="round" ; style="width: 100%;" type="text"><br>
 				<div style="display: flex;"><br>
-					<div style="float: left; width: 150px;">
+					<div style="margin-right: 10px; width: 40%;">
 						Store In:<br>
 						<select id="storage" class="round" onchange="glob.variableChange(this, 'varNameContainer')">
 							${data.variables[0]}
 						</select>
 					</div>
-					<div id="varNameContainer" style="margin-left: 10px;">
+					<div id="varNameContainer" style="margin-left: 10px; width: 60%;">
 						Variable Name:<br>
-						<input id="varName" class="round" type="text">
+						<input id="varName" class="round" type="text" style="width: 100%;">
 					</div>
 				</div>
-
-<div>
-
-				<div style="float: left">
-        <br>
-					<label for="debugMode"><font color="white">End Behavior</font></label>
-					<select id="behavior" class="round" style="width: 100%">
+				<div>
+					<br>
+					End Behavior:<br>
+					<select id="behavior" class="round">
 						<option value="0" selected>Call Next Action Automatically</option>
 						<option value="1">Do Not Call Next Action</option>
 					</select>
 				</div>
 
-        <div style="float: left; margin-left: 10px">
-        <br>
-    			<label for="debugMode"><font color="white">Debug Mode</font></label>
-    			<select id="debugMode" class="round">
-    				<option value="1">Enabled</option>
-    				<option value="0" selected>Disabled</option>
-    			</select>
-    		</div><br>
-
-</div>
-
 			</div>
 
 		</div>
+		<style>
+			#mod-container {
+				width: 570px;
+				height: 359px;
+				overflow-y: none;
+			}
 
-	 </div>`;
+			#main-body {
+				padding: 15px;
+				overflow-y: none;
+			}
+
+			.action-input {
+				margin: 0 !important;
+				padding: 0 !important;
+			}
+
+			body {
+				margin: 0;
+				overflow-y: none;
+			}
+		</style>
+	</div>
+</div>`;
   },
 
   //---------------------------------------------------------------------
@@ -171,8 +178,8 @@ module.exports = {
   //---------------------------------------------------------------------
 
   init: function() {
-     const { glob, document } = this;
-     glob.variableChange(document.getElementById("storage"), "varNameContainer");
+    const { glob, document } = this;
+    glob.variableChange(document.getElementById("storage"), "varNameContainer");
   },
 
   //---------------------------------------------------------------------
@@ -192,7 +199,6 @@ module.exports = {
     const storage = parseInt(data.storage);
     const jsonObjectVarName = this.evalMessage(data.jsonObjectVarName, cache);
     const path = this.evalMessage(data.path, cache);
-    const _DEBUG = parseInt(data.debugMode);
 
     const jsonRaw = this.getVariable(storage, jsonObjectVarName, cache);
 
@@ -216,7 +222,7 @@ module.exports = {
           outData = WrexMODS.jsonPath(jsonData, "$.." + path);
         }
 
-      if(_DEBUG) console.log(outData);
+        console.log(outData);
 
         try {
           var test = JSON.parse(JSON.stringify(outData));
@@ -255,7 +261,13 @@ module.exports = {
             );
           } else {
             this.storeValue(outValue, storage, varName, cache);
-            if(_DEBUG) console.log("WebAPI Parser: JSON Data values starting from ["+path+"] stored to: ["+varName +"]");
+            console.log(
+              "WebAPI Parser: JSON Data values starting from [" +
+                path +
+                "] stored to: [" +
+                varName +
+                "]"
+            );
           }
         }
       }

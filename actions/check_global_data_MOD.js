@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Create Animated Emoji",
+name: "Check Global Data",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Create Animated Emoji",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Emoji Control",
+section: "Deprecated",
 
 //---------------------------------------------------------------------
 // Action Subtitle
@@ -23,41 +23,29 @@ section: "Emoji Control",
 //---------------------------------------------------------------------
 
 subtitle: function(data) {
-	return `${data.emojiName}`;
+	const results = ["Continue Actions", "Stop Action Sequence", "Jump To Action", "Jump Forward Actions"];
+	return `If True: ${results[parseInt(data.iftrue)]} ~ If False: ${results[parseInt(data.iffalse)]}`;
 },
 
 //---------------------------------------------------------------------
-	 // DBM Mods Manager Variables (Optional but nice to have!)
-	 //
-	 // These are variables that DBM Mods Manager uses to show information
-	 // about the mods for people to see in the list.
-	 //---------------------------------------------------------------------
-
-	 // Who made the mod (If not set, defaults to "DBM Mods")
-	 author: "MrGold",
-
-	 // The version of the mod (Defaults to 1.0.0)
-	 version: "1.9.4", //Added in 1.9.4
-
-	 // A short description to show on the mod line for this mod (Must be on a single line)
-	 short_description: "Creates an Animated Emoji",
-
-	 // If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
-     
-
-	 //---------------------------------------------------------------------
-
-//---------------------------------------------------------------------
-// Action Storage Function
+// DBM Mods Manager Variables (Optional but nice to have!)
 //
-// Stores the relevant variable info for the editor.
+// These are variables that DBM Mods Manager uses to show information
+// about the mods for people to see in the list.
 //---------------------------------------------------------------------
 
-variableStorage: function(data, varType) {
-	const type = parseInt(data.storage2);
-	if(type !== varType) return;
-	return ([data.varName2, 'Animated Emoji']);
-},
+// Who made the mod (If not set, defaults to "DBM Mods")
+author: "MrGold",
+
+// The version of the mod (Defaults to 1.0.0)
+version: "1.9.5", //Added in 1.9.5
+
+// A short description to show on the mod line for this mod (Must be on a single line)
+short_description: "Check if a Global Data Value meets the conditions",
+
+// If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
+
+//---------------------------------------------------------------------
 
 //---------------------------------------------------------------------
 // Action Fields
@@ -67,7 +55,7 @@ variableStorage: function(data, varType) {
 // are also the names of the fields stored in the action's JSON data.
 //---------------------------------------------------------------------
 
-fields: ["emojiName", "storage", "varName", "storage2", "varName2"],
+fields: ["dataName", "comparison", "value", "iftrue", "iftrueVal", "iffalse", "iffalseVal"],
 
 //---------------------------------------------------------------------
 // Command HTML
@@ -87,39 +75,30 @@ fields: ["emojiName", "storage", "varName", "storage2", "varName2"],
 
 html: function(isEvent, data) {
 	return `
-<div>
-    <p>
-        <u>Mod Info:</u><br>
-	    Created by MrGold
-    </p>
-</div><br>
-<div style="width: 90%;">
-	Animated Emoji Name:<br>
-	<input id="emojiName" class="round" type="text">
-</div><br>
-<div>
-	<div style="float: left; width: 35%;">
-		Source GIF:<br>
-		<select id="storage" class="round" onchange="glob.refreshVariableList(this)">
-			${data.variables[1]}
-		</select>
+<div style="padding-top: 8px;">
+	<div style="float: left; width: 50%;">
+		Data Name:<br>
+		<input id="dataName" class="round" type="text">
 	</div>
-	<div id="varNameContainer" style="float: right; width: 60%;">
-		Variable Name:<br>
-		<input id="varName" class="round" type="text" list="variableList">
+	<div style="float: left; width: 45%;">
+		Comparison Type:<br>
+		<select id="comparison" class="round">
+			<option value="0">Exists</option>
+			<option value="1" selected>Equals</option>
+			<option value="2">Equals Exactly</option>
+			<option value="3">Less Than</option>
+			<option value="4">Greater Than</option>
+			<option value="5">Includes</option>
+			<option value="6">Matches Regex</option>
+		</select>
 	</div>
 </div><br><br><br>
 <div style="padding-top: 8px;">
-	<div style="float: left; width: 35%;">
-		Store In:<br>
-		<select id="storage2" class="round" onchange="glob.onChange1(this)">
-			${data.variables[0]}
-		</select>
-	</div>
-	<div id="varNameContainer2" style="display: none; float: right; width: 60%;">
-		Variable Name:<br>
-		<input id="varName2" class="round" type="text">
-	</div>
+	Value to Compare to:<br>
+	<input id="value" class="round" type="text" name="is-eval">
+</div>
+<div style="padding-top: 16px;">
+	${data.conditions[0]}
 </div>`
 },
 
@@ -134,18 +113,8 @@ html: function(isEvent, data) {
 init: function() {
 	const {glob, document} = this;
 
-	glob.onChange1 = function(event) {
-		const value = parseInt(event.value);
-		const varNameInput = document.getElementById("varNameContainer2");
-		if(value === 0) {
-			varNameInput.style.display = "none";
-		} else {
-			varNameInput.style.display = null;
-		}
-	};
-
-	glob.refreshVariableList(document.getElementById('storage'));
-	glob.onChange1(document.getElementById('storage2'));
+	glob.onChangeTrue(document.getElementById('iftrue'));
+	glob.onChangeFalse(document.getElementById('iffalse'));
 },
 
 //---------------------------------------------------------------------
@@ -158,21 +127,57 @@ init: function() {
 
 action: function(cache) {
 	const data = cache.actions[cache.index];
-	const server = cache.server;
-	if(server && server.createEmoji) {
-		const type = parseInt(data.storage);
-		const varName = this.evalMessage(data.varName, cache);
-		const gif = this.getVariable(type, varName, cache);
-		const name = this.evalMessage(data.emojiName, cache);
-		server.createEmoji(gif, name).then(function(emoji) {
-			const varName2 = this.evalMessage(data.varName2, cache);
-			const storage = parseInt(data.storage2);
-			this.storeValue(emoji, storage, varName2, cache);
-			this.callNextAction(cache);
-		}.bind(this)).catch(this.displayError.bind(this, data, cache));
-	} else {
+
+	let result = false;
+
+	const dataName = this.evalMessage(data.dataName, cache);
+	const compare = parseInt(data.comparison);
+
+	const fs = require("fs");
+	const path = require("path");
+
+	const filePath = path.join(process.cwd(), "data", "globals.json");
+
+	if(!fs.existsSync(filePath)) {
+		console.log("ERROR: Globals JSON file does not exist!");
 		this.callNextAction(cache);
+		return;
 	}
+
+	const obj = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+	const val1 = obj[dataName];
+
+	let val2 = this.evalMessage(data.value, cache);
+	if(compare !== 6) val2 = this.eval(val2, cache);
+	if(val2 === false) val2 = this.evalMessage(data.value, cache);
+	
+	switch(compare) {
+		case 0:
+			result = Boolean(val1 !== undefined);
+			break;
+		case 1:
+			result = Boolean(val1 == val2);
+			break;
+		case 2:
+			result = Boolean(val1 === val2);
+			break;
+		case 3:
+			result = Boolean(val1 < val2);
+			break;
+		case 4:
+			result = Boolean(val1 > val2);
+			break;
+		case 5:
+			if(typeof(val1.includes) === 'function') {
+				result = Boolean(val1.includes(val2));
+			}
+			break;
+		case 6:
+			result = Boolean(val1.match(new RegExp('^' + val2 + '$', 'i')));
+			break;
+	}
+	this.executeResults(result, data, cache);
 },
 
 //---------------------------------------------------------------------

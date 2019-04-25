@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Create Embed Message",
+name: "Set Embed Timestamp",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -23,7 +23,20 @@ section: "Embed Message",
 //---------------------------------------------------------------------
 
 subtitle: function(data) {
-	return `${data.title}`;
+	if(data.text !== undefined) {var text = data.text} else {var text = ''};
+	if(data.year !== undefined) {var year = data.year} else {var year = ''};
+	if(data.month) {var month = data.month} else {var month = ''};
+	if(data.day) {var day = data.day} else {var day = ''};
+	if(data.hour) {var hour = data.hour} else {var hour = ''};
+	if(data.minute) {var minute = data.minute} else {var minute = ''};
+	if(data.second) {var second = data.second} else {var second = ''};
+	var result;
+	switch(parseInt(data.type)) {
+		case 0: result = 'Current Timestamp';
+		case 1: result = `String Timestamp: "${text}"`;
+		case 2: result = `Custom Timestamp: "${year} ${month} ${day} ${hour} ${minute} ${second}"`;
+	};
+	return result;
 },
 
 //---------------------------------------------------------------------
@@ -34,30 +47,18 @@ subtitle: function(data) {
 	 //---------------------------------------------------------------------
 
 	 // Who made the mod (If not set, defaults to "DBM Mods")
-	 author: "DBM, ZockerNico",
+	 author: "ZockerNico",
 
 	 // The version of the mod (Defaults to 1.0.0)
-	 version: "1.9.5",//Added in 1.8.2
+	 version: "1.9.5",//Added in 1.9.5
 
 	 // A short description to show on the mod line for this mod (Must be on a single line)
-	 short_description: "Changed category, added author url and the ability to customize the timestamp.",
+	 short_description: "You can add a timestamp with the current or a custom utc timecode",
 
 	 // If it depends on any other mods by name, ex: WrexMODS if the mod uses something from WrexMods
 
 
 	 //---------------------------------------------------------------------
-
-//---------------------------------------------------------------------
-// Action Storage Function
-//
-// Stores the relevant variable info for the editor.
-//---------------------------------------------------------------------
-
-variableStorage: function(data, varType) {
-	const type = parseInt(data.storage);
-	if(type !== varType) return;
-	return ([data.varName, 'Embed Message']);
-},
 
 //---------------------------------------------------------------------
 // Action Fields
@@ -67,7 +68,7 @@ variableStorage: function(data, varType) {
 // are also the names of the fields stored in the action's JSON data.
 //---------------------------------------------------------------------
 
-fields: ["title", "author", "color", "url", "authorIcon", "authorUrl", "imageUrl", "thumbUrl", "timestamp", "timestamp1", "timestamp2", "text", "year", "month", "day", "hour", "minute", "second", "note1", "note2", "storage", "varName"],
+fields: ["storage", "varName", "type", "timestamp1", "timestamp2", "text", "year", "month", "day", "hour", "minute", "second", "note1", "note2"],
 
 //---------------------------------------------------------------------
 // Command HTML
@@ -87,46 +88,36 @@ fields: ["title", "author", "color", "url", "authorIcon", "authorUrl", "imageUrl
 
 html: function(isEvent, data) {
 	return `
-<div id ="wrexdiv" style="width: 550px; height: 350px; overflow-y: scroll; overflow-x: hidden;">
 <div>
 	<p>
-		This action has been modified by DBM Mods.
+		Made by ZockerNico.
 	</p>
-</div>
-<div style="float: left; width: 50%; padding-top: 16px;">
-	Title:<br>
-	<input id="title" class="round" type="text"><br>
-	Author Name:<br>
-	<input id="author" class="round" type="text" placeholder="Leave blank to disallow author!"><br>
-	Author URL:<br>
-	<input id="authorUrl" class="round" type="text" placeholder="Leave blank for none!"><br>
-	Author Icon URL:<br>
-	<input id="authorIcon" class="round" type="text" placeholder="Leave blank for none!"><br>
-</div>
-<div style="float: right; width: 50%; padding-top: 16px;">
-	Color:<br>
-	<input id="color" class="round" type="text" placeholder="Leave blank for default!"><br>
-	URL:<br>
-	<input id="url" class="round" type="text" placeholder="Leave blank for none!"><br>
-	Image URL:<br>
-	<input id="imageUrl" class="round" type="text" placeholder="Leave blank for none!"><br>
-	Thumbnail URL:<br>
-	<input id="thumbUrl" class="round" type="text" placeholder="Leave blank for none!"><br>
-</div>
-<div style="float: left; width: 94%;">
-	Timestamp:<br>
-	<select id="timestamp" class="round" onchange="glob.onChange(this)">
-		<option value="false" selected>No Timestamp</option>
-		<option value="true">Current Timestamp</option>
-		<option value="string">String Timestamp</option>
-		<option value="custom">Custom Timestamp</option>
-	</select>
-</div>
-<div id="timestamp1" class="round" style="float: left; width: 104.6%; padding-top: 16px; display: none;">
+</div><br>
+<div>
+	<div style="float: left; width: 35%;">
+		Source Embed Object:<br>
+		<select id="storage" class="round" onchange="glob.refreshVariableList(this)">
+			${data.variables[1]}
+		</select>
+	</div>
+	<div id="varNameContainer" style="float: right; width: 60%;">
+		Variable Name:<br>
+		<input id="varName" class="round" type="text" list="variableList">
+	</div>
+</div><br><br><br>
+<div style="float: left; width: 35%; padding-top: 8px;">
+	Generation Type:<br>
+	<select id="type" class="round" onchange="glob.onChange(this)">
+		<option value="0" selected>Current Timestamp</option>
+		<option value="1">String Timestamp</option>
+		<option value="2">Custom Timestamp</option>
+	</select><br>
+</div><br><br><br><br>
+<div id="timestamp1" class="round" style="float: left; width: 109.3%; padding-top: 8px; display: none;">
 	UTC Timestamp:<br>
-	<input id="text" class="round" type="text" placeholder="Insert your utc timestamp string...">
+	<input id="text" class="round" type="text" placeholder="Insert your utc timestamp string..."><br>
 </div>
-<div id="timestamp2" style="padding-top: 16px; display: table; width: 95.5%;">
+<div id="timestamp2" style="padding-top: 8px; display: table;">
 	<div style="display: table-cell;">
 		Year:<br>
 		<input id="year" class="round" type="text">
@@ -152,37 +143,18 @@ html: function(isEvent, data) {
 		<input id="second" class="round" type="text">
 	</div>
 </div>
-<div>
-	<div style="float: left; width: 35%;">
-		<br>Store In:<br>
-		<select id="storage" class="round">
-			${data.variables[1]}
-		</select>
-	</div>
-	<div id="varNameContainer" style="float: right; width: 60%;">
-		<br>Variable Name:<br>
-		<input id="varName" class="round" type="text"><br>
-	</div>
-</div>
 <div id="note1" style="float: left; padding-top: 8px; width: 100%; display: none;">
-	<h2>
-		String Timestamp<br>
-	</h2>
 	<p>
-		This setting works with time formats like "March 03, 1973 11:13:00" or "100000000000" (milliseconds).<br>
+		This setting works with time formats like "March 03, 1973 11:13:00" or "100000000000" (milliseconds).
 	</p>
 </div>
 <div id="note2" style="float: left; padding-top: 8px; width: 100%; display: none;">
-	<h2>
-		Custom Timestamp<br>
-	</h2>
-	<p>
+	<p><br>
 		Correct input:<br>
-		Year: [2019] Month: [8] Day: [10] Hour: [ ] Minute: [ ] Second: [ ]<br>
+		Year: [2019] Month: [8] Day: [10] Hour: [] Minute: [] Second: []<br>
 		Incorrect input:<br>
-		Year: [2019] Month: [8] Day: [ ] Hour: [6] Minute: [ ] Second: [ ]<br>
+		Year: [2019] Month: [8] Day: [] Hour: [6] Minute: [] Second: []
 	</p>
-</div>
 </div>`
 },
 
@@ -202,21 +174,20 @@ init: function() {
 	const note2 = document.getElementById('note2');
 
 	glob.onChange = function() {
-		switch(document.getElementById('timestamp').value) {
-			case "false":
-			case "true":
+		switch(parseInt(document.getElementById('type').value)) {
+			case 0:
 				timestamp.style.display = 'none';
 				timestamp2.style.display = 'none';
 				note.style.display = 'none';
 				note2.style.display = 'none';
 				break;
-			case "string":
+			case 1:
 				timestamp.style.display = 'table';
 				timestamp2.style.display = 'none';
 				note.style.display = null;
 				note2.style.display = 'none';
 				break;
-			case "custom":
+			case 2:
 				timestamp.style.display = 'none';
 				timestamp2.style.display = 'table';
 				note.style.display = 'none';
@@ -226,9 +197,10 @@ init: function() {
 		};
 	};
 
-	document.getElementById('timestamp');
+	document.getElementById('type');
 
-	glob.onChange(document.getElementById('timestamp'));
+	glob.onChange(document.getElementById('type'));
+	glob.refreshVariableList(document.getElementById('storage'));
 },
 
 //---------------------------------------------------------------------
@@ -241,7 +213,9 @@ init: function() {
 
 action: function(cache) {
 	const data = cache.actions[cache.index];
-	const embed = this.createEmbed();
+	const storage = parseInt(data.storage);
+	const varName = this.evalMessage(data.varName, cache);
+	const embed = this.getVariable(storage, varName, cache);
 	const text = this.evalMessage(data.text, cache);
 	const year = parseInt(this.evalMessage(data.year, cache));
 	const month = parseInt(this.evalMessage(data.month, cache)-1);
@@ -249,45 +223,8 @@ action: function(cache) {
 	const hour = parseInt(this.evalMessage(data.hour, cache));
 	const minute = parseInt(this.evalMessage(data.minute, cache));
 	const second = parseInt(this.evalMessage(data.second, cache));
-
-	//Title
-	embed.setTitle(this.evalMessage(data.title, cache));
-
-	//URL
-	if(data.url) {
-		embed.setURL(this.evalMessage(data.url, cache));
-	};
-
-	//Author Name
-	if(data.author) {
-		if(data.authorIcon && data.authorUrl) {
-			embed.setAuthor(this.evalMessage(data.author, cache), this.evalMessage(data.authorIcon, cache), this.evalMessage(data.authorUrl, cache));
-		} else if(data.authorIcon && !data.authorUrl) {
-			embed.setAuthor(this.evalMessage(data.author, cache), this.evalMessage(data.authorIcon, cache));
-		} else if(!data.authorIcon && data.authorUrl) {
-			embed.setAuthor(this.evalMessage(data.author, cache), '', this.evalMessage(data.authorUrl, cache));
-		} else {
-			embed.setAuthor(this.evalMessage(data.author, cache));
-		};
-	};
-
-	//Color
-	if(data.color) {
-		embed.setColor(this.evalMessage(data.color, cache));
-	};
-
-	//Image URL
-	if(data.imageUrl) {
-		embed.setImage(this.evalMessage(data.imageUrl, cache));
-	};
-
-	//Thumbnail URL
-	if(data.thumbUrl) {
-		embed.setThumbnail(this.evalMessage(data.thumbUrl, cache));
-	};
-
-	//Timestamp
-	switch(parseInt(data.timestamp)) {
+	
+	switch(parseInt(data.type)) {
 		case 0:
 			embed.setTimestamp(new Date());
 			break;
@@ -327,9 +264,6 @@ action: function(cache) {
 			break;
 	};
 
-	const storage = parseInt(data.storage);
-	const varName = this.evalMessage(data.varName, cache);
-	this.storeValue(embed, storage, varName, cache);
 	this.callNextAction(cache);
 },
 
@@ -343,12 +277,6 @@ action: function(cache) {
 //---------------------------------------------------------------------
 
 mod: function(DBM) {
-	const DiscordJS = DBM.DiscordJS;
-	const Actions = DBM.Actions;
-
-	Actions.createEmbed = function() {
-		return new DiscordJS.RichEmbed();
-	};
 }
 
 }; // End of module
