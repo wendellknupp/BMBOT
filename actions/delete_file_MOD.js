@@ -14,7 +14,7 @@ name: "Delete File",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Deprecated",
+section: "File Stuff",
 
 //---------------------------------------------------------------------
 // Action Subtitle

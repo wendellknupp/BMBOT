@@ -31,7 +31,7 @@ name: "Generate Random Hex Color",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Other Stuff",
+section: "Random Generators",
 
 //---------------------------------------------------------------------
 // Action Subtitle

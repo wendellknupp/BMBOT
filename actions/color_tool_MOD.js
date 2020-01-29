@@ -6,7 +6,7 @@ module.exports = {
 // This is the name of the action displayed in the editor.
 //---------------------------------------------------------------------
 
-name: "Color",
+name: "Color Creator",
 
 //---------------------------------------------------------------------
 // Action Section
@@ -14,7 +14,7 @@ name: "Color",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Tools",
+section: "Other Stuff",
 
 //---------------------------------------------------------------------
 // Action Subtitle

@@ -14,7 +14,7 @@ name: "Math Operation",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Other Stuff",
+section: "Math Operations",
 
 //---------------------------------------------------------------------
 // Action Subtitle

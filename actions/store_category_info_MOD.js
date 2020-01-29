@@ -78,7 +78,7 @@ module.exports = {
 				dataType = "Boolean";
 				break;
 			case 6:
-				dataType = "Channel List"
+				dataType = "Channel List";
 				break;
 			case 8:
 				dataType = "Text Channel List";

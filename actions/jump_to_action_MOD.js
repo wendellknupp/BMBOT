@@ -14,7 +14,7 @@ name: "Jump to Action",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Other Stuff",
+section: "Actions Jumpers",
 
 //---------------------------------------------------------------------
 // DBM Mods Manager Variables (Optional but nice to have!)

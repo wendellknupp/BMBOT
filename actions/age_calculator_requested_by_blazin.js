@@ -14,7 +14,7 @@ name: "Age Calculator",
 // This is the section the action will fall into.
 //---------------------------------------------------------------------
 
-section: "Other Stuff",
+section: "Math Operations",
 
 	
 //---------------------------------------------------------------------
