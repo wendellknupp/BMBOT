@@ -40,7 +40,7 @@ module.exports = {
     author: "Cap",
     
     // The version of the mod (Last edited version number of DBM Mods)
-    version: "1.9.6", //Added in 1.9.6
+    version: "1.9.7", //Added in 1.9.7
     
     // A short description to show on the mod line for this mod (Must be on a single line)
     short_description: "Store something from a date more fully, plus!",
@@ -70,7 +70,7 @@ module.exports = {
     // by creating elements with corresponding IDs in the HTML. These
     // are also the names of the fields stored in the action's JSON data.
     //---------------------------------------------------------------------
-
+    
     fields: ["sourceDate", "dateLanguage", "modeStorage", "info", "buildInput", "storage", "varName"],
     
     //---------------------------------------------------------------------
@@ -149,13 +149,13 @@ module.exports = {
             <b>Ex:</b> <span id="code">DD/MM/YYYY [at] HH:mm</span> = <span id="code">10/26/2019 at 10:38</span>
         </div>
         <style>
-            span.wrexlink {
+             span.wrexlink {
 		color: #99b3ff;
 		text-decoration: underline;
                 cursor: pointer
             }
 
-	    span.wrexlink:hover { 
+	     span.wrexlink:hover { 
                 color:#4676b9
             }
 
@@ -231,7 +231,8 @@ module.exports = {
         const modeType = parseInt(this.evalMessage(data.modeStorage, cache));
         const info = parseInt(data.info);
 
-        let result
+        let result;
+        
         if (modeType === 0) {
             switch(info) {
                 case 0:
@@ -273,22 +274,21 @@ module.exports = {
                 case 12:
                     result = date.format("X");
                     break;
-                }
-            }
+               }
+          } else {
+             result = date.format(buildInput);
+          }
 
-            else {
-                result = date.format(buildInput);
-            }
-
-            if (result === "Invalid date") {
-                return console.log('Invalid Date! Check that your date is valid in "Store Date Info Plus". A Date generally looks like the one stored in "Creation Date" of a server. (variables works)');
-            }
+          if (result === "Invalid date") {
+             return console.log('Invalid Date! Check that your date is valid in "Store Date Info Plus". A Date generally looks like the one stored in "Creation Date" of a server. (variables works)');
+          }
     
-        if (result !== undefined) {
-            const storage = parseInt(data.storage);
-            const varName = this.evalMessage(data.varName, cache);
-            this.storeValue(result, storage, varName, cache);
-        }
+          if (result !== undefined) {
+              const storage = parseInt(data.storage);
+              const varName = this.evalMessage(data.varName, cache);
+              this.storeValue(result, storage, varName, cache);
+          }
+	   
         this.callNextAction(cache);
     },
     

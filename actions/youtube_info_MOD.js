@@ -39,7 +39,7 @@ module.exports = {
 
     // The version of the mod (Defaults to 1.0.0)
     version: "1.9.6", //Added in 1.9.4?
-    version2: "1.0.0", // Just to keep track of this version compared to mod pack version
+    version2: "1.1.0", // Just to keep track of this version compared to mod pack version
 
     // A short description to show on the mod line for this mod (Must be on a single line)
     short_description: "Gets extra video information on YouTube based on video ID.",

@@ -108,10 +108,11 @@ init: function() {
 
 action: function(cache) {
 	const data = cache.actions[cache.index];
-	const type = parseInt(data.role);
+	const storage = parseInt(data.role);
 	const varName = this.evalMessage(data.varName, cache);
-	const role = this.getRole(type, varName, cache);
-	let result = false;
+	const role = this.getRole(storage, varName, cache);
+	const info = parseInt(data.permission);
+	const reason = this.evalMessage(data.reason, cache);
 	if(role) {
 		result = role.hasPermission([(data.permission)]);
 	}
